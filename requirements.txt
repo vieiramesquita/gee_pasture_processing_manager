@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+earthengine-api
+loguru
+requests
+pydantic

@@ -1,0 +1,12 @@
+# Dados e Logs locais
+*.db
+*.log
+app.log
+
+# Python
+__pycache__/
+.venv/
+.env
+
+# Sistema
+.DS_Store

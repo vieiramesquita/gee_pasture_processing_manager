@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEE MapBiomas - Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden">
+
+    <div id="projectModal"
+        class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center backdrop-blur-sm hidden transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all">
+            <div class="text-center mb-6">
+                <div
+                    class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600 text-2xl shadow-inner">
+                    <i class="fa-solid fa-cloud"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Bem-vindo ao MapBiomas</h2>
+                <p class="text-slate-500 mt-2 text-sm">Para começar, cole o nome do seu Projeto no Google Cloud.</p>
+            </div>
+
+            <form id="setupForm" class="space-y-4">
+                <div>
+                    <input type="text" id="modalProjeto" placeholder="Ex: ee-meu-projeto" required
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all font-mono text-center text-lg text-slate-700 bg-slate-50">
+                </div>
+                <button type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-check"></i> Salvar e Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <aside class="w-80 bg-white shadow-xl flex flex-col z-10">
+        <div class="p-6 bg-emerald-600 text-white">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-earth-americas"></i> Gerenciado de Processamentos <br><br> MapBiomas Pastagem S2
+            </h1>
+            <p class="text-emerald-100 text-sm mt-1">Gerenciador de Tasks</p>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto">
+
+            <div
+                class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-6 flex justify-between items-center shadow-sm">
+                <div class="overflow-hidden pr-2">
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Projeto Atual</p>
+                    <p id="displayProjeto" class="text-sm font-mono text-slate-700 font-medium truncate w-full"
+                        title="Projeto atual">---</p>
+                </div>
+                <button type="button" id="editProjectBtn"
+                    class="text-slate-400 hover:text-emerald-600 transition-colors p-2" title="Trocar Projeto">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </div>
+
+            <h2 class="text-lg font-semibold mb-4 text-slate-700 border-b pb-2">Nova Execução</h2>
+
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Anos para processar</label>
+                    <input type="text" id="anos" placeholder="Ex: 2023, 2024, 2025" required
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
+                    <p class="text-xs text-slate-400 mt-1">Separe os anos por vírgula.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Cartas (Tiles)</label>
+                    <textarea id="cartas" rows="6" placeholder="Ex:&#10;SD-23-X-A&#10;SD-23-X-B" required
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-none"></textarea>
+                    <p class="text-xs text-slate-400 mt-1">Insira uma carta por linha ou vírgula.</p>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md transition-colors flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-rocket"></i> Iniciar Processamento
+                </button>
+            </form>
+
+            <div id="alertMessage" class="mt-4 hidden p-3 rounded-lg text-sm font-medium"></div>
+        </div>
+
+        <div class="mt-auto p-4 border-t border-slate-200 bg-white">
+            <button id="clearDataBtn"
+                class="w-full flex justify-center items-center gap-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 font-medium transition-colors py-2 px-4 rounded-lg border border-transparent hover:border-red-200">
+                <i class="fa-solid fa-triangle-exclamation"></i> Limpar Dados (Reset)
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden">
+        <header class="p-8 pb-4">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800">Dashboard de Monitoramento</h2>
+                    <p class="text-slate-500 mt-1">Acompanhe o status das exportações no Google Earth Engine.</p>
+                </div>
+                <div class="text-sm text-slate-400 flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    Atualizando
+                </div>
+            </div>
+
+            <div class="grid grid-cols-5 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-l-4 border-l-blue-500">
+                    <div class="text-slate-500 text-sm font-medium">Em Execução (Running)</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1" id="count-running">0</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-l-4 border-l-yellow-400">
+                    <div class="text-slate-500 text-sm font-medium">Na Fila (Ready/Queued)</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1" id="count-ready">0</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-l-4 border-l-emerald-500">
+                    <div class="text-slate-500 text-sm font-medium">Concluídas (Completed)</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1" id="count-completed">0</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-l-4 border-l-red-500">
+                    <div class="text-slate-500 text-sm font-medium">Falhas (Failed)</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1" id="count-failed">0</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 border-l-4 border-l-slate-400">
+                    <div class="text-slate-500 text-sm font-medium">Canceladas (Cancelled)</div>
+                    <div class="text-3xl font-bold text-slate-800 mt-1" id="count-cancelled">0</div>
+                </div>
+            </div>
+        </header>
+
+        <section class="flex-1 p-8 pt-4 overflow-hidden flex flex-col">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col overflow-hidden">
+                <div class="overflow-y-auto flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 z-10">
+                            <tr>
+                                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nome
+                                    da Tarefa</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">GEE
+                                    ID</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">
+                                    Tentativas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskTableBody" class="divide-y divide-slate-100 text-sm">
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-slate-400">Carregando tarefas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ----------------------------------------------------
+        // LÓGICA DO MODAL DE PROJETO
+        // ----------------------------------------------------
+        const modal = document.getElementById('projectModal');
+        const displayProjeto = document.getElementById('displayProjeto');
+
+        // Verifica se tem projeto salvo
+        function checkProject() {
+            const currentProject = localStorage.getItem('gee_project_name');
+            if (!currentProject) {
+                modal.classList.remove('hidden'); // Mostra a caixa
+            } else {
+                modal.classList.add('hidden'); // Esconde a caixa
+                displayProjeto.innerText = currentProject; // Atualiza a tela
+            }
+        }
+
+        // Quando envia o formulário do Modal
+        document.getElementById('setupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const novoProjeto = document.getElementById('modalProjeto').value.trim();
+            localStorage.setItem('gee_project_name', novoProjeto);
+            checkProject();
+        });
+
+        // Quando clica no botão de editar no painel lateral
+        document.getElementById('editProjectBtn').addEventListener('click', () => {
+            const currentProject = localStorage.getItem('gee_project_name');
+            document.getElementById('modalProjeto').value = currentProject || '';
+            modal.classList.remove('hidden');
+        });
+
+        // Roda a checagem ao abrir a página
+        checkProject();
+
+        // ----------------------------------------------------
+        // LÓGICA DO DASHBOARD
+        // ----------------------------------------------------
+        async function loadDashboard() {
+            try {
+                const res = await fetch('/api/summary');
+                const data = await res.json();
+
+                // Atualiza os números
+                document.getElementById('count-running').innerText = data.stats.RUNNING || 0;
+                document.getElementById('count-ready').innerText = data.stats.IN_QUEUE || 0;
+                document.getElementById('count-completed').innerText = data.stats.COMPLETED || 0;
+                document.getElementById('count-failed').innerText = data.stats.ERROR || 0;
+                // 🔴 Atualiza o número do card novo
+                document.getElementById('count-cancelled').innerText = data.stats.CANCELLED || 0;
+
+                const tbody = document.getElementById('taskTableBody');
+                if (data.tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-400">Nenhuma tarefa registrada ainda.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.tasks.map(t => {
+                    let statusColor = 'bg-slate-100 text-slate-600';
+
+                    if (t.state === 'RUNNING') statusColor = 'bg-blue-100 text-blue-700 border border-blue-200';
+                    else if (t.state === 'COMPLETED') statusColor = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+                    else if (t.state === 'ERROR') statusColor = 'bg-red-100 text-red-700 border border-red-200';
+                    else if (t.state === 'IN_QUEUE') statusColor = 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+                    // 🔴 NOVA COR PARA O STATUS CANCELLED (Um tom cinza discreto)
+                    else if (t.state === 'CANCELLED') statusColor = 'bg-slate-200 text-slate-700 border border-slate-300';
+
+                    return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-medium text-slate-700">${t.name}</td>
+                        <td class="py-3 px-4 text-slate-500 font-mono text-xs">${t.gee_id || 'N/A'}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor}">
+                                ${t.state}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-slate-600">${t.retries || 0}</td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+            }
+        }
+
+        // Lidar com o envio das tarefas
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const projeto = localStorage.getItem('gee_project_name');
+            if (!projeto) {
+                checkProject(); // Se ele deu um jeito de burlar, abre a caixa de novo
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const anosInput = document.getElementById('anos').value;
+            const cartasInput = document.getElementById('cartas').value;
+
+            const anos = anosInput.split(',').map(a => parseInt(a.trim())).filter(a => !isNaN(a));
+            const cartas = cartasInput.split(/[\n,]+/).map(c => c.trim()).filter(c => c !== '');
+
+            if (anos.length === 0 || cartas.length === 0) {
+                showAlert('Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projeto, anos, cartas })
+                });
+
+                if (response.ok) {
+                    showAlert('Tarefas enviadas para a fila com sucesso!', 'success');
+                    document.getElementById('anos').value = '';
+                    document.getElementById('cartas').value = '';
+                    loadDashboard();
+                } else {
+                    showAlert('Erro ao enviar tarefas pro servidor. Verifique o terminal.', 'error');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão com o servidor.', 'error');
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-rocket"></i> Iniciar Processamento';
+                btn.disabled = false;
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertMessage');
+            alertBox.innerText = message;
+            alertBox.className = `mt-4 p-3 rounded-lg text-sm font-medium block ${type === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-red-100 text-red-800 border border-red-200'}`;
+            setTimeout(() => { alertBox.classList.add('hidden'); }, 4000);
+        }
+
+        // Lidar com o Reset de dados
+        document.getElementById('clearDataBtn').addEventListener('click', async () => {
+            const confirmacao = confirm("⚠️ ATENÇÃO: Isso irá apagar todo o histórico de tarefas e limpar a fila atual. Tarefas que já estão rodando no GEE não serão canceladas lá, mas sumirão deste painel.\\n\\nDeseja continuar?");
+
+            if (confirmacao) {
+                const btn = document.getElementById('clearDataBtn');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Limpando...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch('/api/clear', { method: 'DELETE' });
+
+                    if (response.ok) {
+                        showAlert('Histórico e fila limpos com sucesso!', 'success');
+                        loadDashboard();
+                    } else {
+                        showAlert('Erro ao limpar os dados.', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Erro de conexão.', 'error');
+                } finally {
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        // Inicia o painel
+        setInterval(loadDashboard, 5000);
+        loadDashboard(); 
+    </script>
+</body>
+
+</html>
