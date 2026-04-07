@@ -26,6 +26,7 @@ Este projeto foi desenvolvido para substituir fluxos de trabalho manuais por uma
 Certifique-se de ter o Python 3.9+ e as dependências instaladas:
 ```bash
 pip install fastapi uvicorn earthengine-api loguru requests pydantic
+earthengine authenticate
 ```
 
 ### 2. Execução
