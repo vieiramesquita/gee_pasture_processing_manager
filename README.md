@@ -4,6 +4,8 @@ O **GEE Pasture Processing Monitor** é um sistema especializado para a automaç
 
 Este projeto foi desenvolvido para substituir fluxos de trabalho manuais por uma infraestrutura robusta que inclui monitoramento em tempo real, persistência de dados e inteligência de submissão em lotes.
 
+![Alt text](fig/print.png)
+
 ## 🚀 Funcionalidades Principais
 
 * **Fila de Processamento Inteligente**: Gerencia a submissão de tarefas respeitando as cotas do GEE (configurado para 15 tarefas simultâneas).
