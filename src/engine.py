@@ -193,12 +193,6 @@ def submit_task(task_config):
     ROI, image = run_classification(carta, year)
     description = f"{carta}_{year}"
 
-    # task = ee.batch.Export.image.toCloudStorage(
-    #     image=image, description=description, bucket="mapbiomas-public-temp",
-    #     fileNamePrefix=f"COLECAO/PASTURE/C3_S2/{description}",
-    #     region=ROI, scale=10, maxPixels=1e13, crs="EPSG:4326"
-    # )
-
     task = ee.batch.Export.image.toDrive(
         image=image, description=description, 
         fileNamePrefix=f"COLECAO/PASTURE/{description}",
