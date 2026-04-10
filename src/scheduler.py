@@ -14,16 +14,19 @@ FATAL_ERRORS = [
 
 def check_status(gee_id):
     try:
-        statuses = ee.data.getTaskStatus(gee_id)
-        if statuses:
-            return statuses[0].get("state", "UNKNOWN"), statuses[0].get("error_message", "")
-        op = ee.data.getOperation(gee_id)
+        # Tenta pegar pelos metadados da operação (comportamento padrão para exports)
+        op = ee.data.getOperation(f"projects/earthengine-legacy/operations/{gee_id}")
         if op:
-            return op.get("metadata", {}).get("state", "UNKNOWN"), op.get("error", {}).get("message", "")
-        return "UNKNOWN", "No data"
+            metadata = op.get("metadata", {})
+            state = metadata.get("state", "UNKNOWN")
+            error = op.get("error", {}).get("message", "")
+            usage = metadata.get("batchEecuUsageSeconds", 0) # 🟢 Extrai EECU
+            return state, error, usage
+            
+        return "UNKNOWN", "No data", 0
     except Exception as e:
         logger.error(f"Erro na consulta: {e}")
-        return "UNKNOWN", str(e)
+        return "UNKNOWN", str(e), 0
 
 def scheduler(task_queue, submit_fn):
     active_tasks, finished_tasks = [], []
@@ -38,8 +41,8 @@ def scheduler(task_queue, submit_fn):
 
         new_active = []
         for task in active_tasks:
-            state, error = check_status(task["gee_id"])
-            task["state"], task["error_msg"] = state, error
+            state, error, usage = check_status(task["gee_id"]) # 🟢 Recebe usage
+            task["state"], task["error_msg"], task["usage_seconds"] = state, error, usage
             
             if state in ["COMPLETED", "SUCCEEDED"]:
                 finished_tasks.append(task)

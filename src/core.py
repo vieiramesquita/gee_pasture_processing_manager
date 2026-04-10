@@ -37,7 +37,8 @@ def init_db():
                 state TEXT, 
                 retries INTEGER, 
                 error_msg TEXT, 
-                config TEXT
+                config TEXT,
+                usage_seconds REAL DEFAULT 0  -- 🟢 Nova Coluna
             )
         """)
 init_db()
@@ -58,12 +59,13 @@ def save_state(tasks):
             else:
                 for t in tasks:
                     conn.execute("""
-                    INSERT OR REPLACE INTO tasks (name, gee_id, state, retries, error_msg, config)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO tasks (name, gee_id, state, retries, error_msg, config, usage_seconds)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     t.get("name"), t.get("gee_id"), t.get("state", "IN_QUEUE"), 
                     t.get("retries", 0), t.get("error_msg", ""), 
-                    json.dumps(t.get("config", {}))
+                    json.dumps(t.get("config", {}).to_dict() if hasattr(t.get("config"), 'to_dict') else t.get("config", {})),
+                    t.get("usage_seconds", 0) # 🟢 Novo valor
                 ))
             conn.commit()
     except sqlite3.Error as e:
