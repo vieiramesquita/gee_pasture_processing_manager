@@ -1,82 +1,73 @@
 # GEE Pasture Processing Monitor 🛰️🌱
 
-O **GEE Pasture Processing Monitor** é um sistema especializado para a automação e gestão de processamentos de larga escala voltados à geração de mapas de pastagem no Google Earth Engine (GEE). 
+O **GEE Pasture Processing Monitor** é uma infraestrutura robusta para automação, gestão e auditoria de processamentos geoespaciais de larga escala no Google Earth Engine (GEE). Especializado na geração de mapas probabilísticos de pastagem, o sistema evoluiu de um simples monitor para um orquestrador de pipeline multisensor.
 
-Este projeto foi desenvolvido para substituir fluxos de trabalho manuais por uma infraestrutura robusta que inclui monitoramento em tempo real, persistência de dados e inteligência de submissão em lotes.
+## 🚀 Funcionalidades Atuais (Core)
 
-![Alt text](fig/print.png)
-
-## 🚀 Funcionalidades Principais
-
-* **Fila de Processamento Inteligente**: Gerencia a submissão de tarefas respeitando as cotas do GEE (configurado para 15 tarefas simultâneas).
-* **Dashboard em Tempo Real**: Interface dinâmica para acompanhar o progresso das classificações por "Carta/Ano".
-* **Persistência com SQLite**: Utiliza o nome do Tile como chave primária, garantindo que o histórico seja único e impedindo duplicatas no banco de dados.
-* **Motor de Auto-Retentativa**: Detecta falhas de rede ou timeouts e reinicia a tarefa automaticamente (limite de 3 tentativas).
-* **Detecção de Erros Fatais**: Interrompe o processamento imediatamente ao detectar erros lógicos (ex: falta de dados de treinamento) para economizar recursos e cota.
-* **Exportação Direta**: Configurado para exportar os resultados diretamente para o Google Drive na pasta `MAPBIOMAS_TEST_PASTURE`.
+* **Arquitetura Multisensor**: Suporte nativo para Sentinel-2 (C4) e Landsat Series (C11 - Anual e Decadal).
+* **Fila Dupla (Gatekeeper)**: Separação entre a fila de submissão interna (suporta milhares de tiles) e a janela de execução no GEE (limitada a 40 tarefas simultâneas para evitar bloqueios de cota).
+* **Monitorização Financeira (Billing)**: Cálculo em tempo real do consumo de recursos em EECU-seconds, EECU-hours e estimativa de custo em dólares (USD).
+* **Resiliência de Auto-Resume**: Persistência de configurações de projeto e estado das tarefas em SQLite. O sistema retoma o processamento automaticamente após quedas ou reinicializações do servidor.
+* **Motor de Auto-Retentativa Inteligente**: Gere falhas temporárias de rede e identifica Erros Fatais (ex: falta de amostras) para interromper tarefas inviáveis e economizar recursos.
+* **Dashboard Avançado**: Interface interativa com ordenação de status/tentativas e cartões de resumo financeiro.
 
 ## 🛠️ Tecnologias
 
-* **Backend**: FastAPI (Python).
-* **Frontend**: HTML5, Tailwind CSS e JavaScript (Dashboard reativo).
-* **Banco de Dados**: SQLite para armazenamento leve e eficiente.
-* **Log**: Loguru para rastreamento detalhado de eventos e erros.
+* **Backend**: FastAPI (Python) com processamento Singleton Thread.
+* **Frontend**: Dashboard reativo (HTML5, Tailwind CSS, JS).
+* **Base de Dados**: SQLite com persistência de metadados e configurações.
+* **SIG/Cloud**: Google Earth Engine High-Volume API.
 
-## ⚙️ Como Instalar e Usar
+## ⚙️ Guia de Instalação e Uso
 
-### 1. Preparação
-Certifique-se de ter o Python 3.9+ e as dependências instaladas:
+### 1. Requisitos
 ```bash
-pip install fastapi uvicorn earthengine-api loguru requests pydantic dynaconf
+pip install fastapi uvicorn earthengine-api loguru requests pydantic
 earthengine authenticate
-```
-
-### 2. Execução
-Inicie o sistema rodando o servidor FastAPI:
-
-```bash
+2. Execução
+Bash
 python src/app.py
-```
-Acesse no navegador: `http://localhost:8000`
+Aceda a: http://localhost:8000
 
-### 3. Fluxo de Trabalho
-- **Inicialização:** Ao abrir o dashboard, informe o nome do seu projeto no Google Cloud para autenticar o GEE.
-- **Configuração:** Insira os anos desejados e a lista de Cartas (Tiles) para processar.
-- **Acompanhamento:** O sistema gerencia a fila automaticamente. Se uma tarefa falhar, ela ficará vermelha (ERROR) e o motivo detalhado será registrado no arquivo `app.log`.
+🗺️ Roadmap de Implementação (Pipeline Automática)
+Este roadmap define os próximos passos para a automação total "Hands-Free", integrando o processamento em nuvem com análise local por IA.
 
-## 🖥️ Guia de Uso do Dashboard
-A interface foi projetada para ser intuitiva, dividindo-se entre controles de entrada e monitoramento de saída.
+🟢 Fase 4: O Sentinela de Download (Em Desenvolvimento)
+[ ] Criar o script pipeline_sentinel.py para monitorizar a base de dados SQLite.
 
-### 1. Configuração do Projeto (Setup)
-- **Projeto Atual:** Ao acessar o sistema, clique no ícone de edição ou use o modal inicial para inserir o ID do seu projeto no Google Cloud (ex: `ee-meu-projeto`).
-- **Inicialização:** Essa ação aciona a inicialização dinâmica da API do Earth Engine para a sessão atual.
+[ ] Integrar o Rclone para acionar o download (sync) da pasta MAPBIOMAS_TEST_PASTURE assim que as tarefas terminarem no GEE.
 
-### 2. Nova Execução de Pastagem
-- **Anos para Processar:** Insira os anos desejados separados por vírgula (ex: `2020, 2021, 2022`).
-- **Cartas (Tiles):** Cole a lista de cartas IBGE que deseja processar. Você pode inserir uma por linha ou separadas por vírgula.
-- **Botão Iniciar:** Ao clicar em "Iniciar Processamento", o sistema valida os dados e os envia para a fila de execução em segundo plano.
+🟡 Fase 5: SIG Local e Pós-Processamento
+[ ] Implementar mosaico automático via gdalbuildvrt e gdal_translate.
 
-### 3. Painel de Monitoramento (Dashboard)
-**Cartões de Resumo:** Acompanhe o status geral através dos quatro contadores automáticos:
-- 🔵 **Running:** Tarefas em processamento ativo no GEE.
-- 🟡 **In Queue:** Tarefas aguardando vaga na fila de submissão.
-- 🟢 **Completed:** Tarefas finalizadas com sucesso e exportadas para o Drive.
-- 🔴 **Failed:** Tarefas que falharam permanentemente ou atingiram o limite de retentativas.
-- ⚪ **Cancelled:** Tarefas que foram interrompidas manualmente no console do GEE.
+[ ] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
 
-**Tabela de Tarefas:** Lista detalhada mostrando o nome do Tile, o ID único gerado pelo Google, o status atual e o número de tentativas realizadas pelo motor de auto-retentativa.
+🟡 Fase 6: Otimização de Limiar (Soft-to-Hard)
+[ ] Cálculo automático de métricas de precisão (AUROC, Precision/Recall AUC).
 
-### 4. Manutenção e Limpeza
-- **Limpar Dados (Reset):** Localizado na parte inferior da barra lateral, este botão limpa o histórico do banco de dados SQLite e esvazia a fila de tarefas atual.
-- **Logs Técnicos:** Em caso de erros (ERROR), o motivo detalhado não polui a interface, mas fica registrado para auditoria no arquivo local `app.log`.
+[ ] Definição do ponto de corte ideal (Cutting Point) via Youden's J Statistic.
 
-## 📂 Visão Geral dos Arquivos
-- `core.py`: Gerencia a conexão com o banco de dados e a inicialização segura do GEE.
-- `engine.py`: Contém a inteligência de classificação espectro-temporal do MapBiomas Pastagem.
-- `scheduler.py`: O "cérebro" que monitora o status no Google e decide sobre retentativas.
-- `app.py`: Ponto de entrada que conecta a interface web ao motor de processamento.
+🔴 Fase 7: Auditoria por IA (Gemma + OpenInterpreter)
+[ ] Geração de relatórios automáticos de área por Tile, Bioma e País.
 
-## 🛡️ Segurança e Privacidade
-Este repositório está configurado para não subir arquivos de banco de dados (`.db`) ou logs (`.log`), protegendo informações sensíveis sobre seus projetos e dados de processamento.
+[ ] Auditoria de consistência temporal e espacial por LLM Local.
 
-> Desenvolvido para fluxos de trabalho MapBiomas.
+[ ] Alertas automáticos via Telegram/Email apenas em caso de inconsistências críticas.
+
+📂 Visão Geral dos Ficheiros
+app.py: Servidor API e despachante de tarefas multisensor.
+
+core.py: Infraestrutura de base de dados, logs e persistência de settings.
+
+scheduler.py: O Gatekeeper que controla o fluxo entre a fila local e a nuvem.
+
+engine_s2_c4.py: Motor de classificação Sentinel-2.
+
+engine_ls_c11_year.py: Motor Landsat Anual.
+
+engine_ls_c11_decade.py: Motor Landsat Decadal.
+
+🛡️ Segurança e Privacidade
+O sistema opera com sandbox de logs e base de dados local. Para a fase de IA, recomenda-se o uso de contentores Docker para o OpenInterpreter com permissões restritas (Read-Only) para evitar comandos acidentais de sistema.
+
+Desenvolvido para fluxos de trabalho MapBiomas Pastagem.
