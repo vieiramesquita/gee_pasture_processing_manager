@@ -2,7 +2,7 @@
 
 O **GEE Pasture Processing Monitor** é uma infraestrutura robusta para automação, gestão e auditoria de processamentos geoespaciais de larga escala no Google Earth Engine (GEE). Especializado na geração de mapas probabilísticos de pastagem, o sistema evoluiu de um simples monitor para um orquestrador de pipeline multisensor.
 
-![Print](./fig/print.png)
+![Print](fig/print.png)
 
 ## 🚀 Funcionalidades Atuais (Core)
 
