@@ -22,7 +22,7 @@ O **GEE Pasture Processing Monitor** é uma infraestrutura robusta para automaç
 
 ### 1. Requisitos
 ```bash
-pip install fastapi uvicorn earthengine-api loguru requests pydantic
+pip install fastapi uvicorn earthengine-api loguru requests pydantic dynaconf
 earthengine authenticate
 2. Execução
 Bash
