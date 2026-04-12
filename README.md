@@ -24,37 +24,42 @@ O **GEE Pasture Processing Monitor** é uma infraestrutura robusta para automaç
 ```bash
 pip install fastapi uvicorn earthengine-api loguru requests pydantic dynaconf
 earthengine authenticate
-2. Execução
-Bash
-python src/app.py
-Aceda a: http://localhost:8000
+```
 
-🗺️ Roadmap de Implementação (Pipeline Automática)
+### 2. Execução
+```bash
+python src/app.py
+```
+
+Acesse a interface em <http://localhost:8000>
+
+
+## 🗺️ Roadmap de Implementação (Pipeline Automática)
 Este roadmap define os próximos passos para a automação total "Hands-Free", integrando o processamento em nuvem com análise local por IA.
 
-🟢 Fase 4: O Sentinela de Download (Em Desenvolvimento)
-[ ] Criar o script pipeline_sentinel.py para monitorizar a base de dados SQLite.
+🟢 Fase 4: Download Bot (Em Desenvolvimento)
+- [ ] Criar o script download_bot.py para monitorar a base de dados SQLite.
 
-[ ] Integrar o Rclone para acionar o download (sync) da pasta MAPBIOMAS_TEST_PASTURE assim que as tarefas terminarem no GEE.
+- [ ] Integrar o Rclone para acionar o download (sync) da pasta no Google Drive/Google Cloud Storage assim que as tarefas terminarem no GEE.
 
-🟡 Fase 5: SIG Local e Pós-Processamento
-[ ] Implementar mosaico automático via gdalbuildvrt e gdal_translate.
+🟡 Fase 5: Moisaico e filtragem multidimensional com GDAL/Scipy
+- [ ] Implementar mosaico automático via gdalbuildvrt e gdal_translate.
 
-[ ] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
+- [ ] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
 
 🟡 Fase 6: Otimização de Limiar (Soft-to-Hard)
-[ ] Cálculo automático de métricas de precisão (AUROC, Precision/Recall AUC).
+- [ ] Cálculo automático de métricas de precisão (AUROC, Precision/Recall AUC).
 
-[ ] Definição do ponto de corte ideal (Cutting Point) via Youden's J Statistic.
+- [ ] Definição do ponto de corte ideal (Cutting Point) via Youden's J Statistic.
 
 🔴 Fase 7: Auditoria por IA (Gemma + OpenInterpreter)
-[ ] Geração de relatórios automáticos de área por Tile, Bioma e País.
+- [ ] Geração de relatórios automáticos de área por Tile, Bioma e País.
 
-[ ] Auditoria de consistência temporal e espacial por LLM Local.
+- [ ] Auditoria de consistência temporal e espacial por LLM Local.
 
-[ ] Alertas automáticos via Telegram/Email apenas em caso de inconsistências críticas.
+- [ ]  Alertas automáticos via Telegram/Email em caso de inconsistências.
 
-📂 Visão Geral dos Ficheiros
+## 📂 Visão Geral dos Ficheiros
 app.py: Servidor API e despachante de tarefas multisensor.
 
 core.py: Infraestrutura de base de dados, logs e persistência de settings.
@@ -66,8 +71,5 @@ engine_s2_c4.py: Motor de classificação Sentinel-2.
 engine_ls_c11_year.py: Motor Landsat Anual.
 
 engine_ls_c11_decade.py: Motor Landsat Decadal.
-
-🛡️ Segurança e Privacidade
-O sistema opera com sandbox de logs e base de dados local. Para a fase de IA, recomenda-se o uso de contentores Docker para o OpenInterpreter com permissões restritas (Read-Only) para evitar comandos acidentais de sistema.
 
 Desenvolvido para fluxos de trabalho MapBiomas Pastagem.
