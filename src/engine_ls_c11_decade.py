@@ -252,17 +252,6 @@ def submit_task(task_config):
     landsatWRSPath = grid[1:4]
     landsatWRSRow = grid[4:7]
     outname = f"br_pasture_lapig_col10_v4_{landsatWRSPath}_{landsatWRSRow}_{decade}_{decade_next}"
-    
-    # task = ee.batch.Export.image.toCloudStorage(
-    #     image=image,
-    #     description=outname,
-    #     bucket="mapbiomas-public-temp",
-    #     fileNamePrefix=f"COLECAO/LANDSAT/PASTURE/C10_v4/{outname}",
-    #     region=ROI,
-    #     scale=30,
-    #     maxPixels=1e13,
-    #     crs="EPSG:4326"
-    # )
 
     task = ee.batch.Export.image.toDrive(
         image=image, description=outname, 
