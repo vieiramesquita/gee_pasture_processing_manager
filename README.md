@@ -50,12 +50,12 @@ Este roadmap define os próximos passos para a automação total "Hands-Free", i
 - [ ] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
 
 🟡 Fase 6: Otimização de Limiar (Soft-to-Hard)
-- [ ] Cálculo automático de métricas de precisão (AUROC, Precision/Recall AUC).
+- [ ] Cálculo automático de métricas de precisão de modelo (AUROC, Precision/Recall AUC).
 
 - [ ] Definição do ponto de corte ideal (Cutting Point) via Youden's J Statistic.
 
 🔴 Fase 7: Auditoria por IA (Gemma + OpenInterpreter)
-- [ ] Geração de relatórios automáticos de área por Tile, Bioma e País.
+- [ ] Geração de relatórios automáticos (Número de arquivos, erros obtidos no processamento, acurácia do mapa, etc.) de área por Tile, Bioma e País.
 
 - [ ] Auditoria de consistência temporal e espacial por LLM Local.
 
