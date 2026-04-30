@@ -54,7 +54,7 @@ Este roadmap define os próximos passos para a automação total "Hands-Free", i
 
 - [ ] Definição do ponto de corte ideal (Cutting Point) via Youden's J Statistic.
 
-🔴 Fase 7: Auditoria por IA (Gemma + OpenInterpreter)
+🔴 Fase 7: Auditoria por IA (Gemma (Ou Gemini/Claude) + OpenInterpreter)
 - [ ] Geração de relatórios automáticos (Número de arquivos, erros obtidos no processamento, acurácia do mapa, etc.) de área por Tile, Bioma e País.
 
 - [ ] Auditoria de consistência temporal e espacial por LLM Local.
