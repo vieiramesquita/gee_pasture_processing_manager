@@ -45,9 +45,9 @@ Este roadmap define os próximos passos para a automação total "Hands-Free", i
 - [ ] Integrar o Rclone para acionar o download (sync) da pasta no Google Drive/Google Cloud Storage assim que as tarefas terminarem no GEE.
 
 🟡 Fase 5: Moisaico e filtragem multidimensional com GDAL/Scipy
-- [ ] Implementar mosaico automático via gdalbuildvrt e gdal_translate.
+- [x] Implementar mosaico automático via gdalbuildvrt e gdal_translate.
 
-- [ ] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
+- [x] Aplicar o Filtro Multidimensional de Mediana (3x3x5) usando Scipy para suavização espectro-temporal.
 
 🟡 Fase 6: Otimização de Limiar (Soft-to-Hard)
 - [ ] Cálculo automático de métricas de precisão de modelo (AUROC, Precision/Recall AUC).
